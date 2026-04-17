@@ -1,0 +1,14 @@
+## Interface: 110002
+## Title: PetBattle
+## Notes: Pokemon Showdown-style battles using your WoW companion pets
+## Author: Claude
+## Version: 0.1.0
+## SavedVariables: PetBattleDB
+
+Core.lua
+TypeChart.lua
+MoveData.lua
+PetData.lua
+BattleEngine.lua
+Network.lua
+UI.lua
