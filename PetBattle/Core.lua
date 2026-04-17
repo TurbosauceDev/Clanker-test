@@ -39,10 +39,13 @@ SlashCmdList["PETBATTLE"] = function(msg)
         PB.UI.ToggleTeamSelect()
     elseif cmd == "battle" or cmd == "b" then
         PB.UI.ToggleBattleFrame()
+    elseif cmd == "random" or cmd == "r" then
+        PB.AIBattle.Start()
     elseif cmd == "forfeit" then
         PB.Engine.Forfeit()
     elseif cmd == "help" or cmd == "" then
         print("|cff00ff00PetBattle Commands:|r")
+        print("  /pb random            - Random battle vs AI (random team)")
         print("  /pb challenge <name>  - Challenge a player to a battle")
         print("  /pb team              - Open team builder")
         print("  /pb battle            - Toggle battle window")

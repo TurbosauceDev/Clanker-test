@@ -394,8 +394,8 @@ function PB.UI.BuildBattleFrame()
             if not myPet then return end
             local moveName = myPet.moves[capturedI]
             if moveName then
-                PB.Network.SendMove(moveName)
                 PB.UI.SetMovesEnabled(false)
+                PB.UI.OnMoveChosen(moveName)
             end
         end)
         moveButtons[i] = btn
@@ -406,6 +406,13 @@ function PB.UI.BuildBattleFrame()
         PB.UI.ShowSwitchMenu()
     end)
     switchBtn:SetPoint("BOTTOMLEFT", 360, 75)
+
+    -- ── Random Battle Button (visible when idle) ─────────────────────────────
+    local randomBtn = MakeButton(f, 160, 36, "Random Battle vs AI", function()
+        PB.AIBattle.Start()
+    end)
+    randomBtn:SetPoint("CENTER", f, "CENTER", 0, 0)
+    f.randomBtn = randomBtn
 
     -- ── Forfeit Button ───────────────────────────────────────────────────────
     local forfeitBtn = MakeButton(f, 100, 30, "Forfeit", function()
@@ -527,12 +534,40 @@ function PB.UI.Refresh()
     local canAct = (battle.state == PB.State.CHOOSING)
     PB.UI.SetMovesEnabled(canAct)
     f.switchBtn:SetEnabled(canAct)
+
+    -- Show the Random Battle button only when not in an active battle
+    local inBattle = battle.state ~= PB.State.IDLE and battle.state ~= PB.State.GAME_OVER
+    if f.randomBtn then f.randomBtn:SetShown(not inBattle) end
 end
 
 function PB.UI.SetMovesEnabled(enabled)
     if not battleFrame then return end
     for _, btn in ipairs(battleFrame.moveButtons) do
         btn:SetEnabled(enabled)
+    end
+end
+
+-- ─── Action Routing ──────────────────────────────────────────────────────────
+-- Single call-site for move/switch so UI doesn't care about AI vs PvP.
+
+function PB.UI.OnMoveChosen(moveName)
+    if PB.Battle.isAIBattle then
+        PB.AIBattle.SubmitAction({ type="move", name=moveName })
+    else
+        PB.Network.SendMove(moveName)
+    end
+end
+
+function PB.UI.OnSwitchChosen(index)
+    if PB.Battle.isAIBattle then
+        if PB.Battle.state == PB.State.SWITCH_PROMPT then
+            PB.AIBattle.DoForcedSwitch(index)
+        else
+            PB.UI.SetMovesEnabled(false)
+            PB.AIBattle.SubmitAction({ type="switch", index=index })
+        end
+    else
+        PB.Network.SendSwitch(index)
     end
 end
 
@@ -587,7 +622,7 @@ function PB.UI.ShowSwitchMenu()
             local capturedI = i
             btn:SetScript("OnClick", function()
                 sf:Hide()
-                PB.Network.SendSwitch(capturedI)
+                PB.UI.OnSwitchChosen(capturedI)
             end)
             btns[i] = btn
         end

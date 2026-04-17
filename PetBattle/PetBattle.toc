@@ -11,4 +11,5 @@ MoveData.lua
 PetData.lua
 BattleEngine.lua
 Network.lua
+AIBattle.lua
 UI.lua
